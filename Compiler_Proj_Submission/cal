@@ -1,0 +1,128 @@
+grammar cal;
+
+program : decl_list function_list MAIN;
+
+decl_list :(decl SEMI decl_list | );
+
+decl: var_decl | const_decl;
+
+var_decl: VARIABLE IDENTIFIER COLON type;
+
+const_decl: CONSTANT IDENTIFIER COLON type ASSIGN expression;
+
+function_list :(function function_list)?;
+
+function: type IDENTIFIER LPAREN parameter_list RPAREN IS 
+            decl_list 
+            BEGIN
+            statement_block
+            RETURN LPAREN expression | RPAREN SEMI
+            END;
+
+parameter_list: nemp_parameter_list?;
+
+nemp_parameter_list: IDENTIFIER COLON type | IDENTIFIER COLON type COMMA nemp_parameter_list;
+
+main: MAIN BEGIN decl_list statement_block END;
+
+
+statement_block: (statement statement_block)?;
+
+statement: IDENTIFIER ASSIGN expression SEMI 
+           | IDENTIFIER LPAREN arg_list RPAREN SEMI 
+           | BEGIN statement_block END 
+           | IF condition BEGIN statement_block END
+           | ELSE BEGIN statement_block END 
+           | WHILE condition BEGIN statement_block END 
+           | SKIPS SEMI;
+
+
+condition: TILDE condition
+           | LPAREN condition RPAREN 
+           | expression comp_op expression 
+           | condition OR condition
+           | condition AND condition;
+
+
+arg_list: nemp_arg_list |;
+
+nemp_arg_list: IDENTIFIER | IDENTIFIER COMMA nemp_arg_list;
+
+type: INT | BOOL | VOID;
+
+binary_arith_op: PLUS | MINUS;
+
+comp_op: EQ | NEQ | LT | GT | LEQ | GEQ;
+
+fragments: IDENTIFIER | MINUS IDENTIFIER | NUMBER | TRUE | FALSE;
+
+expression: fragments (binary_arith_op fragments)* 
+            | LPAREN expression RPAREN 
+            | IDENTIFIER LPAREN arg_list RPAREN 
+            |fragments;
+
+// reserved words
+VARIABLE: V A R I A B L E;
+INT: I N T;
+CONSTANT: C O N S T A N T;
+RETURN: R E T U R N;
+BOOL: B O O L;
+VOID: V O I D;
+MAIN: M A I N;
+IF: I F;
+ELSE: E L S E;
+TRUE: T R U E;
+FALSE: F A L S E;
+WHILE: W H I L E;
+BEGIN: B E G I N;
+END: E N D;
+IS: I S;
+SKIPS: S K I P;
+
+//symbols and shit
+COMMA: ',';
+SEMI: ';';
+COLON: ':';
+ASSIGN: ':=';
+LPAREN: '(';
+RPAREN: ')';
+PLUS: '+';
+MINUS: '-';
+TILDE: '∼';
+OR: '|';
+AND: '&';
+EQ: '=';
+NEQ: '!=';
+LT: '<';
+LEQ: '<=';
+GT: '>';
+GEQ: '>=';
+// fragments for letters because case insensitive 
+fragment A:     'a' | 'A';
+fragment M:     'm' | 'M';
+fragment K:     'k' | 'K';
+fragment V:     'v' | 'V';
+fragment B:     'b' | 'B';
+fragment C:     'c' | 'C';
+fragment D:     'd' | 'D';
+fragment E:     'e' | 'E';
+fragment F:     'f' | 'F';
+fragment G:     'g' | 'G';
+fragment H:     'h' | 'H';
+fragment I:     'i' | 'I';
+fragment L:     'l' | 'L';
+fragment N:     'n' | 'N';
+fragment O:     'o' | 'O';
+fragment P:     'p' | 'P';
+fragment R:     'r' | 'R';
+fragment S:     's' | 'S';
+fragment T:     't' | 'T';
+fragment U:     'u' | 'U';
+fragment W:     'w' | 'W';
+fragment Y:     'y' | 'Y';
+
+WS: [ \t\r\n]+ -> skip;
+NUMBER: '-'? [1-9] [0-9]* | '0';
+IDENTIFIER: [a-zA-Z] [a-zA-Z0-9_]*; 
+LINE_COMMENT:           '//' .*? '\n' -> skip;
+MULTI_LINE_COMMENT:     '/*' (MULTI_LINE_COMMENT|.)*? '*/' -> skip;
